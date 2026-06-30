@@ -1,300 +1,62 @@
-# Privacy Policy
-
-**Last Updated:** March 26, 2026
+# Hosted Service Privacy Policy
 
-At MyApi ("Company," "we," "us," or "our"), we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information. By accessing or using our Service, you agree to these terms.
-
----
-
-## 1. Our Service
-
-MyApi provides:
-- **OAuth Integration**: Securely connect and manage third-party accounts
-- **Token Vault**: Encrypted storage for API credentials and personal tokens  
-- **Access Management**: Master tokens and scoped guest access
-- **Personas & Docs**: Identity and context management
-
-**Third-Party Services Note:**
-Any collection, use, and management of personal information by OAuth providers (Google, GitHub, etc.) are governed by their privacy policies. You must comply with their terms when connecting services.
-
-**Age Requirement:**
-MyApi is not intended for children under 18. We do not knowingly collect data from users under 18.
-
----
-
-## 2. What Information Do We Collect?
-
-### Account Information
-- Name, email address, profile information
-- Password (hashed, never stored plaintext)
-- Billing information if you use paid services
-- Language, timezone, communication preferences
+**Last Updated:** June 30, 2026
 
-### Your Content
-- OAuth tokens from connected services
-- API keys and credentials (encrypted)
-- Files and documents you upload
-- Messages and workspace data
-
-### Automatic Collection
-- IP address and geolocation
-- Browser type, OS, device information
-- Usage data and analytics
-- Login timestamps and frequency
-- Cookies and session data
-- Error logs and performance metrics
-
-### Support Data
-- Customer support inquiries and feedback
-- Emails and communication history
-- Screenshots or information you provide
-
----
-
-## 3. How Do We Use Your Information?
-
-We use your information to:
-
-**Providing the Service:**
-- Authenticate your account
-- Manage OAuth connections
-- Store encrypted tokens and credentials
-- Process API requests
-- Handle payments and billing
-
-**Security & Compliance:**
-- Prevent fraud and abuse
-- Maintain service security
-- Comply with legal obligations
-- Monitor for unauthorized access
-- Improve security measures
-
-**Communication:**
-- Send transactional emails (account, billing, security)
-- Send notifications you've requested
-- Respond to support inquiries
-- Notify about service changes
-
-**Improvement:**
-- Analyze usage patterns
-- Identify and fix issues
-- Improve features and performance
-- Better understand your needs
-
-**Analytics:**
-- Aggregate anonymous usage data
-- Measure service effectiveness
-- Plan improvements and new features
-
-**Marketing** (with your consent):
-- Send promotional emails
-- Inform about new features
-- Share product announcements
-
-**We DO NOT:**
-- Sell personal data
-- Share data with marketing companies
-- Use private files to train AI
-- Trade data with data brokers
-
----
-
-## 4. Data Retention
-
-| What | How Long |
-|-----|----------|
-| Account information | Until account deletion (then immediately deleted) |
-| OAuth tokens | Until disconnected or account deletion |
-| Session data | 7 days (auto-deleted) |
-| Notifications | 60 days (auto-deleted) |
-| Audit logs | Indefinitely (for security/compliance) |
-| Support tickets | 1 year, then deleted |
-
-**When you delete your account:**
-- All account data deleted immediately
-- OAuth tokens revoked
-- Files and documents removed
-- Cannot be undone or recovered
-
-**What we cannot delete:**
-- Audit logs (kept for security, de-identified)
-- Legal hold data (if legally required)
-
----
-
-## 5. Who Can Access Your Information?
-
-**We do not sell or rent your information.**
-
-We may share limited information with:
-
-### Service Providers
-- Hosting and infrastructure providers
-- Payment processors (PCI certified)
-- Email delivery services
-- Analytics and monitoring tools
-- All under data protection agreements
-
-### Authorized Personnel
-- Customer support (to help you)
-- Security team (to investigate threats)
-- Engineering (to improve the Service)
-- All bound by confidentiality
-
-### Legal Requirements
-- Law enforcement (with valid court order)
-- Regulatory authorities (as required by law)
-- To protect rights, safety, or property
-- To investigate illegal activity
-- To comply with legal obligations
-
-### Business Transfers
-- In case of merger or acquisition
-- New owner will be required to honor this policy
-- We will notify you if this occurs
+> Scope note: this Privacy Policy applies to the official hosted MyApi service operated by Agentic Integration LLC, including myapiai.com and related managed cloud endpoints.
+>
+> If you self-host MyApi Open, you are the operator of that deployment and are responsible for your own privacy notices, data-processing disclosures, retention policies, security controls, and legal compliance.
+>
+> The AGPL community-edition code in this repository does not, by itself, make Agentic Integration LLC the data controller for self-hosted deployments.
 
-### Resellers & Partners
-- If you purchased through a reseller, they may receive limited info to support you
-- Under strict data protection agreements
+## 1. What this policy covers
 
----
+This policy explains how we collect, use, and protect personal information when you use the hosted MyApi service.
 
-## 6. Your Privacy Rights
+## 2. Data we process for the hosted service
 
-### General Rights
-You can:
-- Access your account data anytime (via dashboard)
-- Update or correct your information
-- Request a copy of your data
-- Request deletion of your account
+Depending on the hosted features you use, we may process:
 
-### GDPR Rights (EU Users)
-- **Access:** Request a copy of your data
-- **Correction:** Correct inaccurate information
-- **Deletion:** Delete your account and data
-- **Portability:** Export data in standard format
-- **Restrict:** Limit how we use your data
-- **Object:** Opt out of certain processing
-- **Withdraw consent:** Withdraw at any time
+- account identifiers such as email, display name, and authentication records
+- encrypted service credentials and OAuth tokens
+- AI workflow data, prompts, outputs, and audit events
+- billing and subscription metadata
+- security, device, and abuse-prevention logs
 
-### CCPA Rights (California Users)
-- **Know:** What data we collect
-- **Delete:** Request deletion
-- **Opt-Out:** Opt out of data sales (we don't sell)
-- **Non-Discrimination:** No penalties for exercising rights
+## 3. How we use data
 
-### How to Exercise Your Rights
-Email: [privacy@myapiai.com](mailto:privacy@myapiai.com)
-- Subject: "Privacy Request: [Your Request Type]"
-- Response time: 30-45 days
+We use hosted-service data to:
 
----
+- provide and secure the service
+- operate connected integrations and AI workflows
+- enforce quotas, billing, and abuse controls
+- support customers and investigate incidents
+- comply with legal obligations
 
-## 7. Data Security
+## 4. Third-party processors
 
-We implement:
-- **HTTPS encryption** for all data in transit (TLS 1.2+)
-- **AES-256 encryption** for sensitive data at rest
-- **Multi-factor authentication** support
-- **Role-based access control** (need-to-know basis)
-- **Regular security audits** and penetration testing
-- **Encrypted daily backups** with secure storage
-- **24/7 incident response** team
+Hosted-service workflows may involve third-party providers such as payment processors, AI providers, email vendors, cloud infrastructure providers, and OAuth-connected services. Their policies also apply where relevant.
 
-However, **no system is 100% secure**. Use the Service at your own risk.
+## 5. We do not sell personal data
 
----
+We do not sell hosted-service personal data to data brokers or advertisers.
 
-## 8. Cookies & Tracking
+## 6. Self-hosted deployments
 
-**Session Cookies** (Required)
-- Keep you logged in securely
-- 7-day expiration
-- Cannot be disabled (required for login)
+If you deploy MyApi Open yourself:
 
-**Analytics** (Optional)
-- Google Analytics for usage metrics
-- You can opt-out via browser settings
-- We respect "Do Not Track" signals
+- Agentic Integration LLC is not automatically the operator of your instance
+- your infrastructure decisions control where data is stored and processed
+- you are responsible for user disclosures, lawful basis, retention, and transfer mechanisms
 
-**Marketing** (Optional)
-- Facebook/Twitter pixels for ad effectiveness
-- Can be disabled in browser settings
+## 7. Security
 
-You can control cookies via your browser settings.
+We use reasonable administrative, technical, and organizational measures for the hosted service, but no system is perfectly secure.
 
----
+## 8. Your rights
 
-## 9. International Transfers
+Depending on your jurisdiction, you may have rights to access, correct, export, or delete personal information processed by the hosted service.
 
-Your data is stored primarily in the **United States**.
+## 9. Contact
 
-**For EU Users:**
-- US law provides different data protections than EU law
-- The US government may request data via legal process
-- By using MyApi, you accept this data transfer
-- We use Standard Contractual Clauses for transfers
-
-**For all users:**
-- Social media data may be shared globally (per OAuth providers' practices)
-- Third-party services process data in their locations
-
----
-
-## 10. Children's Privacy
-
-MyApi is not intended for users under 18. We:
-- Do not knowingly collect data from minors
-- Will delete such data if discovered
-- Will notify parents/guardians
-
----
-
-## 11. Third-Party Services
-
-When you connect OAuth services (Google, GitHub, Slack, etc.):
-- **Their policies apply** to your interaction with them
-- **We only store your token**, not your personal data
-- **You see their consent screen** to approve permissions
-- **We are not responsible** for their security or changes
-
----
-
-## 12. Contact Us
-
-**General Privacy Questions:**
-- Email: [privacy@myapiai.com](mailto:privacy@myapiai.com)
-- Response: 5 business days
-
-**Security Issues:**
-- Email: [security@myapiai.com](mailto:security@myapiai.com)
-- Response: 48 hours
-
-**GDPR/CCPA Requests:**
-- Email: [privacy@myapiai.com](mailto:privacy@myapiai.com)
-- Subject: "GDPR Request: [Access/Delete/Export]"
-- Response: 30-45 days
-
----
-
-## 13. Changes to This Policy
-
-We may update this policy anytime to reflect service changes, legal requirements, and other factors. We'll notify you of material changes via email.
-
-Your continued use constitutes acceptance of changes. If you disagree, delete your account.
-
----
-
-## 14. Compliance Statements
-
-**GDPR:** We comply with EU General Data Protection Regulation requirements.
-
-**CCPA:** We comply with California Consumer Privacy Act requirements.
-
-**COPPA:** We do not target children under 13.
-
-**CAN-SPAM:** Unsubscribe from marketing emails anytime via the link in each email.
-
----
-
-**By using MyApi, you agree to this Privacy Policy.**
+- privacy@myapiai.com
+- security@myapiai.com
