@@ -37,6 +37,11 @@ services:
 
     environment:
       DB_PATH: /app/data/myapi.db
+      # SECURITY (fork): force production so secret validation + secure cookies always engage,
+      # regardless of what the user's .env says. Do NOT remove.
+      NODE_ENV: production
+      # AFP remote shell/file access stays OFF unless explicitly enabled (see .env).
+      AFP_ENABLED: ${AFP_ENABLED:-false}
 
     # SECURITY FIX (LOW - CVSS 3.7): Use private DNS resolvers instead of public
     # 8.8.8.8 (Google) and 1.1.1.1 (Cloudflare) are public DNS servers that can log queries

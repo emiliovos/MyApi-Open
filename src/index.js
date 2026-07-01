@@ -2362,10 +2362,9 @@ async function authenticate(req, res, next) {
     /^\/api\/v1\/agent-guide$/,              // public: AI agent capabilities + connection guide
   ];
 
-  // Allow DELETE on invitations if email query param is provided (for email-based revocation without login)
-  if (req.method === 'DELETE' && fullPath.includes('/invitations/') && req.query.email) {
-    return next();
-  }
+  // SECURITY (fork): removed the unauthenticated `DELETE /invitations/…?email=` bypass.
+  // It let anyone revoke a pending invitation just by knowing/guessing the email — an auth-bypass
+  // branch. Invitation revocation now requires a normal authenticated request like every other route.
 
   // Allow POST /api/v1/handshakes without auth (public entry point for AI agent access requests)
   if (req.method === 'POST' && /^\/api\/v1\/handshakes$/.test(fullPath)) {
@@ -2678,7 +2677,17 @@ app.use('/api/v1/vault', authenticate, createVaultInstructionsRoutes(db, null, c
 // AFP (API File Protocol) — PC filesystem/exec connector
 const afpRoutes = require('./routes/afp');
 
-app.use('/api/v1/afp', authenticate, afpRoutes);
+// SECURITY (fork): AFP grants remote file + arbitrary SHELL exec on registered devices.
+// A master-token leak with AFP on = full RCE on every registered machine. OFF by default;
+// set AFP_ENABLED=true only if you accept that blast radius.
+if (process.env.AFP_ENABLED === 'true') {
+  app.use('/api/v1/afp', authenticate, afpRoutes);
+  console.log('[AFP] Remote device access ENABLED (AFP_ENABLED=true) — high blast radius');
+} else {
+  app.use('/api/v1/afp', (req, res) => res.status(403).json({
+    error: 'AFP disabled. Set AFP_ENABLED=true to enable remote device file/shell access.'
+  }));
+}
 
 // FAL Image Generation API
 const falImagesRoutes = require('./routes/fal-images');
@@ -3992,91 +4001,18 @@ app.get('/api/v1/health', (req, res) => {
   res.status(health.statusCode).json({ status: health.status, api: '/api/v1/', docs: '/openapi.json', database: health.database });
 });
 
-// Turso data import endpoints
-app.get('/turso-import', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/turso-import.html'));
-});
-
-app.get('/api/v1/turso/export-sql', (req, res) => {
-  try {
-    const Database = require('better-sqlite3');
-    const dbPath = process.env.DB_PATH || path.join(__dirname, 'data/myapi.db');
-    const db = new Database(dbPath);
-
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
-
-    let sql = '-- MyApi Database Export\n-- Generated: ' + new Date().toISOString() + '\n\n';
-
-    for (const table of tables) {
-      const tableName = table.name;
-      const createStmt = db.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name=?`).get(tableName);
-      if (createStmt && createStmt.sql) {
-        sql += createStmt.sql + ';\n';
-      }
-
-      const rows = db.prepare(`SELECT * FROM ${tableName}`).all();
-      for (const row of rows) {
-        const columns = Object.keys(row).join(', ');
-        const values = Object.values(row).map(v => {
-          if (v === null) return 'NULL';
-          if (typeof v === 'string') return "'" + v.replace(/'/g, "''") + "'";
-          return v;
-        }).join(', ');
-        sql += `INSERT INTO ${tableName} (${columns}) VALUES (${values});\n`;
-      }
-    }
-
-    res.set('Content-Type', 'text/plain');
-    res.send(sql);
-  } catch (err) {
-    console.error('[Turso] Export error:', err);
-    res.status(500).json({ error: 'Failed to export SQL', details: err.message });
-  }
-});
-
-app.post('/api/v1/turso/execute', express.json(), (req, res) => {
-  const { sql, tursoUrl } = req.body;
-  const authHeader = req.headers.authorization;
-
-  if (!sql || !tursoUrl || !authHeader) {
-    return res.status(400).json({ error: 'Missing required fields: sql, tursoUrl, Authorization header' });
-  }
-
-  const token = authHeader.replace('Bearer ', '');
-
-  // Execute via HTTP to Turso
-  const https = require('https');
-  const options = {
-    hostname: tursoUrl.split('://')[1].split('/')[0],
-    port: 443,
-    path: '/',
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(sql)
-    }
-  };
-
-  const httpReq = https.request(options, (httpRes) => {
-    let data = '';
-    httpRes.on('data', chunk => data += chunk);
-    httpRes.on('end', () => {
-      if (httpRes.statusCode === 200 || httpRes.statusCode === 201) {
-        res.json({ success: true });
-      } else {
-        res.status(httpRes.statusCode).json({ error: `Turso returned ${httpRes.statusCode}` });
-      }
-    });
-  });
-
-  httpReq.on('error', (err) => {
-    console.error('[Turso] Request error:', err);
-    res.status(500).json({ error: 'Failed to execute on Turso', details: err.message });
-  });
-
-  httpReq.write(sql);
-  httpReq.end();
+// ── SECURITY (fork hardening): Turso migration endpoints REMOVED ──────────────
+// Upstream shipped:
+//   GET  /turso-import                → served an import UI
+//   GET  /api/v1/turso/export-sql     → dumped the ENTIRE database (all tables) to ANY
+//                                        authenticated token, incl. scoped agent tokens.
+//                                        CRITICAL: total scope bypass (hashes, master-token
+//                                        ciphertext, OAuth refresh-token ciphertext).
+//   POST /api/v1/turso/execute        → authenticated SSRF: sent requests to a user-supplied
+//                                        host with no private-host validation.
+// These were dead migration tooling. Permanently disabled here.
+app.all(['/turso-import', '/api/v1/turso/export-sql', '/api/v1/turso/execute'], (req, res) => {
+  res.status(410).json({ error: 'Endpoint permanently removed for security (fork hardening).' });
 });
 
 app.get('/openapi.json', (req, res) => {
@@ -8463,7 +8399,9 @@ function base64UrlNoPad(buf) {
 }
 
 function buildPkcePairFromState(state) {
-  const secret = String(process.env.SESSION_SECRET || 'myapi-session-secret-change-me');
+  // SECURITY (fork): never fall back to a public constant. In prod SESSION_SECRET is
+  // validated present+strong at startup; in dev use an ephemeral random per-boot value.
+  const secret = String(process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'));
   // Deterministic per-state verifier (lets callback recompute without extra storage)
   const verifierRaw = crypto.createHmac('sha256', secret).update(`pkce:${state}`).digest();
   const codeVerifier = base64UrlNoPad(Buffer.concat([verifierRaw, verifierRaw])).slice(0, 64);
@@ -12508,18 +12446,37 @@ function validateRequiredSecrets() {
     }
   }
 
-  // SOC2 Phase 1: Reject known insecure default key values in production
+  // SECURITY (fork hardening): reject placeholder / weak secrets and enforce minimum entropy.
+  // Upstream only rejected an EXACT match against a short list, so the placeholders shipped in
+  // .env.docker (e.g. "your-32-character-encryption-key-here") sailed through — a copy-paste
+  // deploy ran with publicly-known keys. We now also reject any value containing a placeholder
+  // substring and anything shorter than 32 chars.
   if (isProd) {
-    const BANNED_DEFAULT_KEYS = ['default-vault-key-change-me', 'change-me', 'changeme', 'secret', 'password'];
+    const BANNED_DEFAULT_KEYS = [
+      'default-vault-key-change-me', 'change-me', 'changeme', 'secret', 'password',
+      // exact placeholders shipped in .env.docker / .env.example
+      'your-32-character-encryption-key-here', '32-character-encryption-key-here!!',
+      'myapi-session-secret-change-me',
+    ];
+    // substrings that betray an unedited placeholder (a proper `openssl rand` value has none of these)
+    const WEAK_SUBSTRINGS = ['change-in-production', 'change-me', 'changeme', 'your-', '-here', 'placeholder', 'example', 'generate-with'];
     for (const envVar of ['VAULT_KEY', 'ENCRYPTION_KEY', 'JWT_SECRET', 'SESSION_SECRET']) {
-      const val = String(process.env[envVar] || '').trim().toLowerCase();
-      if (val && BANNED_DEFAULT_KEYS.includes(val)) {
-        console.error(`❌ FATAL: ${envVar} is set to a known insecure default value. Change it before starting in production.`);
+      const raw = String(process.env[envVar] || '').trim();
+      if (!raw) continue; // absence already handled above (fatal in prod)
+      const val = raw.toLowerCase();
+      if (BANNED_DEFAULT_KEYS.includes(val) || WEAK_SUBSTRINGS.some(p => val.includes(p))) {
+        console.error(`❌ FATAL: ${envVar} looks like a placeholder / insecure default.`);
+        console.error(`   Generate a strong unique value:  openssl rand -hex 32`);
+        process.exit(1);
+      }
+      if (raw.length < 32) {
+        console.error(`❌ FATAL: ${envVar} must be at least 32 characters (got ${raw.length}).`);
+        console.error(`   Generate a strong unique value:  openssl rand -hex 32`);
         process.exit(1);
       }
     }
     if (missing.length === 0) {
-      console.log('✅ All required secrets validated');
+      console.log('✅ All required secrets validated (present, non-placeholder, ≥32 chars)');
     }
   }
 }
@@ -12572,7 +12529,7 @@ if (process.env.NODE_ENV !== 'test') {
         const chatgptClientId = process.env.CHATGPT_OAUTH_CLIENT_ID || 'chatgpt';
         const rawSecret = process.env.CHATGPT_OAUTH_CLIENT_SECRET || (() => {
           // Derive a stable secret from ENCRYPTION_KEY so it survives restarts
-          const base = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || 'default';
+          const base = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || require('crypto').randomBytes(32).toString('hex');
           return require('crypto').createHash('sha256').update('chatgpt-oauth-secret:' + base).digest('hex');
         })();
         const secretHash = await require('bcrypt').hash(rawSecret, 10);
@@ -12598,7 +12555,7 @@ if (process.env.NODE_ENV !== 'test') {
       try {
         const afpClientId = 'myapi-afp';
         // AFP uses PKCE — client secret is never sent by the daemon, but the DB requires a hash
-        const afpSecret = require('crypto').createHash('sha256').update('afp-pkce-placeholder:' + (process.env.ENCRYPTION_KEY || 'default')).digest('hex');
+        const afpSecret = require('crypto').createHash('sha256').update('afp-pkce-placeholder:' + (process.env.ENCRYPTION_KEY || require('crypto').randomBytes(32).toString('hex'))).digest('hex');
         const afpSecretHash = await require('bcrypt').hash(afpSecret, 8);
         upsertOAuthServerClient({
           clientId: afpClientId,
@@ -12616,7 +12573,7 @@ if (process.env.NODE_ENV !== 'test') {
     // Bootstrap myapi-agent public OAuth client (PKCE-only, localhost + HTTPS redirect)
     (async () => {
       try {
-        const agentSecret = require('crypto').createHash('sha256').update('agent-pkce-placeholder:' + (process.env.ENCRYPTION_KEY || 'default')).digest('hex');
+        const agentSecret = require('crypto').createHash('sha256').update('agent-pkce-placeholder:' + (process.env.ENCRYPTION_KEY || require('crypto').randomBytes(32).toString('hex'))).digest('hex');
         const agentSecretHash = await require('bcrypt').hash(agentSecret, 8);
         upsertOAuthServerClient({
           clientId: 'myapi-agent',

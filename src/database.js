@@ -2876,7 +2876,9 @@ function cleanupExpiredStateTokens() {
 // Phase 5.1: Token Encryption Key Rotation
 function createKeyVersion(version, algorithm = 'aes-256-gcm') {
   const id = 'key_v' + crypto.randomBytes(8).toString('hex');
-  const vaultKey = process.env.VAULT_KEY || 'default-vault-key-change-me';
+  // SECURITY (fork): never encrypt at rest with a public default key. Fail loudly instead.
+  const vaultKey = process.env.VAULT_KEY;
+  if (!vaultKey) throw new Error('VAULT_KEY not set — refusing to create a key version with an insecure default.');
   const key = crypto.scryptSync(vaultKey, 'salt', 32);
   const keyHash = crypto.createHash('sha256').update(key).digest('hex');
   const now = new Date().toISOString();
@@ -2916,7 +2918,9 @@ function rotateEncryptionKey(newVaultKey) {
   for (const token of tokens) {
     try {
       // Decrypt with old key
-      const oldKey = process.env.VAULT_KEY || 'default-vault-key-change-me';
+      // SECURITY (fork): no public default fallback during rotation.
+      const oldKey = process.env.VAULT_KEY;
+      if (!oldKey) throw new Error('VAULT_KEY not set — cannot rotate encryption key.');
       const oldKeyHash = crypto.scryptSync(oldKey, 'salt', 32);
       
       let decryptedAccess = null;
