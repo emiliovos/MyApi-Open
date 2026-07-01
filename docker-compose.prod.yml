@@ -54,7 +54,7 @@ services:
     # Binding to 0.0.0.0 exposes the service to all network interfaces
     # In production, use a reverse proxy or load balancer to handle external traffic
     ports:
-      - \"127.0.0.1:${PORT:-4500}:${PORT:-4500}\"
+      - "127.0.0.1:${PORT:-4500}:${PORT:-4500}"
 
     volumes:
       # SQLite database — bind-mounted from host so data persists across rebuilds
